@@ -1,0 +1,47 @@
+kind = "web"
+previewPath = "/"
+title = "Lista de tareas"
+description = "Una aplicación web sencilla para organizar tareas: añadir tareas, marcarlas como completadas y eliminarlas, con una interfaz React conectada a un servidor Python."
+version = "1.0.0"
+id = "artifacts/task-list-web"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 20882
+
+[services.development]
+run = "pnpm --filter @workspace/task-list-web run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/task-list-web", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/task-list-web/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20882"
+BASE_PATH = "/"
+[[services]]
+name = "python-api"
+paths = ["/api/task-api"]
+localPort = 8000
+
+[services.development]
+run = "cd server && uv run --project ../../../ python -m uvicorn main:app --host 0.0.0.0 --port $PORT"
+
+[services.production.build]
+args = ["uv", "sync", "--project", "../..", "--no-dev"]
+
+[services.production.run]
+args = ["uv", "run", "--project", "../..", "--no-sync", "python", "-m", "uvicorn", "main:app", "--app-dir", "server", "--host", "0.0.0.0", "--port", "8000"]
+
+[services.production.run.env]
+PORT = "8000"
+
+[services.production.health.startup]
+path = "/api/task-api/tasks"

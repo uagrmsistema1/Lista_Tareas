@@ -1,0 +1,1 @@
+- [Custom artifact services](artifact-service-config.md) — production commands use nested `build`/`run` tables, and workflow paths are relative to the artifact directory.
